@@ -12,12 +12,13 @@
 % SICStus PROLOG: definicoes iniciais
 
 :- op( 900,xfy,'::' ).
-%:- dynamic adjudicante/4.
-%:- dynamic adjudicataria/4.
-%:- dynamic contrato/9.
 :- dynamic adjudicante/3.
 :- dynamic adjudicataria/3.
-:- dynamic contrato/7.
+:- dynamic contrato/9.
+:- dynamic tipoProcedimento/1.
+:- dynamic tipoContrato/1.
+:- dynamic localizacao/1.
+:- dynamic data/3.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensão do predicado que permite a evolucao do conhecimento
@@ -77,11 +78,44 @@ demo( Questao,desconhecido ) :-
     nao( Questao ),
     nao( -Questao ).
 
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+%- - - - - - - - - - - - - - - - - - - - - - - - - - -  -  -  -  -   -
+
+% Invariantes Universais
+
+% Invariante que garante que não existe conhecimento
+% perfeito positivo repetido
++T :: (solucoes(T, T, S),
+       comprimento(S, 1)).
+
+% Invariante que garante que não existe conhecimento
+% perfeito negativo repetido
++(-T) :: (solucoes(T, -T, S),
+          comprimento(S, 1)).
+
+% Invariante que não permite adicionar conhecimento
+% perfeito positivo que contradiz conhecimento perfeito negativo
++T :: nao(-T).
+
+% Invariante que não permite adicionar conhecimento
+% perfeito negativo que contradiz conhecimento perfeito positivo
++(-T) :: nao(T).
+
+% Invariante que garante que não existem excecoes repetidas
++(excecao(T)) :: (solucoes(T, excecao(T), S),
+                  comprimento(S, 1)).
+
+%- - - - - - - - - - - - - - - - - - - - - - - - - - -  -  -  -  -   -
+
++adjudicante(N,NIF,M)::(solucoes( NIF,( adjudicante(_,NIF,_) ),S )
+				  comprimento( S,1 )).
+
++adjudicataria(N,NIF,M)::(solucoes( NIF,( adjudicataria( _,NIF,_ ) ),S ),
+                  comprimento( S,1 )).
+
 % Invariante Estrutural:  nao permitir a insercao de conhecimento
 %                         repetido
 
-+adjudicante(N,NIF,M)::(solucoes( (N,NIF,M),(adjudicante( N,NIF,M )),S ),
++adjudicante(N,NIF,M)::(solucoes( (N,NIF,M),( adjudicante( N,NIF,M ) ),S ),
                   comprimento( S,N ), 
 				  N == 1  ).
 
@@ -93,7 +127,50 @@ demo( Questao,desconhecido ) :-
                   comprimento( S,N ), 
 				  N == 1  ).
 
++tipoProcedimento(T)::solucoes( T,( tipoProcedimento(T) ),S ),
+				  comprimento( S,N ),
+				  N == 0  ).
+
+% Invariante Referencial: 
+%
+
++adjudicante(N,NIF,M)::(solucoes( (Ns,Ms),( adjudicante(Ns,NIF,Ms) ),S) ),
+				  comprimento( S,N ),
+				  N<=1 ).
+
++adjudicataria(N,NIF,M)::(solucoes( (Ns,Ms),( adjudicataria(Ns,NIF,Ms) ),S) ),
+				  comprimento( S,N ),
+				  N<=1 ).
+
++contrato(AN,AT,TC,TP,D,V,P,L,DT)::(solucoes( (Ds,Vs,Ps,Ls,DTs),( contrato(AN,AT,TC,TP,Ds,Vs,Ps,Ls,DTs) ),S ),
+                  comprimento( S,N ), 
+				  N == 1  ).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
+
+contrato(AN,AT,TC,TP,D,V,P,L,DT):-
+	tipoProcedimento(TP),
+	adjudicante(Z,AN,X),
+	adjudicataria(Q,AT,W),
+	tipoContrato(TC),
+	localizacao(L).
+
+tipoprocedimento('Ajuste Direto').
+tipoprocedimento('Consulta Prévia').
+tipoprocedimento('Concurso Público').
+
+contrato(AN,AT,TC,tipoProcedimento('Ajuste Direto'),D,V,P,L,DT):-
+	V<=5000, P<=365.
+
+tipoContrato('Aquisição de bens móveis').
+tipoContrato('Locação de bens móveis').
+tipoContrato('Aquicição de serviços').
+
+contrato(AN,AT,tipoContrato('Aquisição de bens móveis'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
+contrato(AN,AT,tipoContrato('Locação de bens móveis'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
+contrato(AN,AT,tipoContrato('Aquisição de serviços'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
+
+%- Impedir a inserção de contratos com diferentes tipos dos já definidos, para o tipo de procedimento Ajuste Direto.
 
 
 
