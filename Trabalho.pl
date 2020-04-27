@@ -205,16 +205,21 @@ par(X) :- NX is X-2,NX >= 1,impar(NX).
 impar(1).
 impar(X) :- NX is X-2,NX >= 1,impar(NX).
 
-avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :- (((M == 2) -> ((D + Dias > 29) -> (avancaDias(data(1,3,A),Dias - (29 - D),data(Ds,3,As)));
-                                                            (D + Dias =< 29) -> (Ds is D + Dias)));
-                                               ((M =< 7) -> (((impar(M)) -> ((D + Dias > 31) -> Ms is M + 1, avancaDias(data(1,Ms,A),Dias - (31 - D),data(Ds,Ms,As)));
-                                                                  ((D + Dias =< 31) -> Ds is D + Dias));
-                                                            ((par(M)) ->  ((D + Dias > 30) -> Ms is M + 1, avancaDias(data(1,Ms,A),Dias - (30 - D),data(Ds,Ms,As)));
-                                                                  ((D + Dias =< 30) -> Ds is D + Dias))));                                           
-                                               ((M >= 8) -> (((impar(M)) -> ((D + Dias > 30) -> Ms is M + 1, avancaDias(data(1,Ms,A),Dias - (30 - D),data(Ds,Ms,As)));
-                                                                  ((D + Dias < 30) -> Ds is D + Dias));
-                                                            ((par(M)) ->  ((D + Dias > 31) -> Ms is M + 1, avancaDias(data(1,Ms,A),Dias - (31 - D),data(Ds,Ms,As)));
-                                                                  ((D + Dias =< 31) -> Ds is D + Dias)))).
+% Extensao do predicado data: [H|T] -> {V,F}
+
+data(D,M,A) :- D > 0, D =< 31, M > 0, M =< 12, 0 < A.
+
+avancaDias(_,0,_).
+avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :- ((M == 2) -> ((D + Dias > 29) -> Ds is 1, Ms is 3, As is A, (avancaDias(data(1,3,A),Dias - (29 - D + 1),data(Ds,Ms,As)));
+                                                            (D + Dias =< 29) -> (Ds is (D + Dias), Ms is M, As is A)));
+                                               ((M =< 7) -> (((impar(M)) -> ((D + Dias > 31) -> Ds is 1, As is A, Ms is M + 1 , avancaDias(data(1,Ms,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
+                                                                  ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)));
+                                                            ((par(M)) ->  ((D + Dias > 30) ->  Ds is 1, As is A, Ms is M + 1 , avancaDias(data(1,Ms,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
+                                                                  ((D + Dias =< 30) -> (Ds is (D + Dias), Ms is M, As is A)))));                                           
+                                               ((M >= 8) -> (((impar(M)) -> ((D + Dias > 30) ->  Ds is 1, As is A, Ms is M + 1 , avancaDias(data(1,Ms,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
+                                                                  ((D + Dias < 30) ->(Ds is(D + Dias), Ms is M, As is A)));
+                                                            ((par(M)) ->  ((D + Dias > 31) ->  Ds is 1, As is A, Ms is M + 1 , avancaDias(data(1,Ms,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
+                                                                  ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A))))).
                                 
 
 
@@ -229,6 +234,8 @@ apagaT(X,[H|T],[H|L]) :- X \= H, apagaT(X,T,L).
 maxL([H],H) :- !. % Bang serve como paragem de modo a evitar ciclo infinito
 maxL([H|T],M) :- maxL(T,M), M >= H. % Continua o M pois M > H
 maxL([H|T],H) :- maxL(T,M), H > M. % Substitui H pelo M pois H > M
+
+
 
 % Extensao do predicado somaList: [H|T] -> {V,F}
 
