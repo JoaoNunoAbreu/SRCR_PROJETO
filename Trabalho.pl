@@ -12,8 +12,8 @@
 % SICStus PROLOG: definicoes iniciais
 
 :- op( 900,xfy,'::' ).
-:- dynamic adjudicante/3.
-:- dynamic adjudicataria/3.
+:- dynamic adjudicante/4.
+:- dynamic adjudicataria/4.
 :- dynamic contrato/9.
 :- dynamic tipoProcedimento/1.
 :- dynamic tipoContrato/1.
@@ -165,9 +165,20 @@ demo( Questao,desconhecido ) :-
                   comprimento( S,Num ),
 				  Num == 0).
 
+% Garantir que um contrato está associado a um adjudicante e adjudicatária que existam na base de conhecimento
++contrato(AN,AT,_,_,_,_,_,_,_) :: (solucoes(AN,(adjudicante(AN,_,_,_)),S), 
+                  solucoes(AT,(adjudicataria(AT,_,_,_)),R),
+                  comprimento( S,1 ),
+                  comprimento( R,1 )).
 
+% Garantir que um contrato é válido(campos corretos)
++contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (countDigits(AN,N1), countDigits(AT,N2), tipoContrato(TC), tipoProcedimento(TP), isData(DT), N1 == 9, N2 == 9).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
+
+adjudicante(123456789,'Joana Abreia',123456789,'Amarante').
+adjudicataria(234567891,'Nuna Abreia',234567891,'Amarante e arredores').
+%contrato(123456789,23456789,tipoContrato('Aquisição de bens móveis'),tipoProcedimento('Ajuste Direto'),'wdcwcwec',200,200,'Amarante',data(29,4,2020)).
 
 contrato(AN,AT,TC,TP,D,V,P,L,DT) :-
 	tipoProcedimento(TP),
@@ -177,14 +188,14 @@ contrato(AN,AT,TC,TP,D,V,P,L,DT) :-
 	localizacao(L).
 
 tipoProcedimento('Ajuste Direto').
-tipoProcedimento('Consulta Prévia').
-tipoProcedimento('Concurso Público').
+tipoProcedimento('Consulta Previa').
+tipoProcedimento('Concurso Publico').
 
 contrato(AN,AT,TC,tipoProcedimento('Ajuste Direto'),D,V,P,L,DT) :- V =< 5000, P =< 365.
 
-tipoContrato('Aquisição de bens móveis').
-tipoContrato('Locação de bens móveis').
-tipoContrato('Aquisição de serviços').
+tipoContrato('Aquisicao de bens moveis').
+tipoContrato('Locacao de bens moveis').
+tipoContrato('Aquisicao de servicos').
 
 contrato(AN,AT,tipoContrato('Aquisição de bens móveis'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
 contrato(AN,AT,tipoContrato('Locação de bens móveis'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
@@ -198,27 +209,53 @@ contrato(AN,AT,tipoContrato('Aquisição de serviços'),tipoProcedimento('Ajuste
 % Extensao do predicado par: X -> {V,F}
 
 par(0).
-par(X) :- NX is X-2,NX >= 1,impar(NX).
+par(X) :- NX is X-2,NX >= 0,par(NX).
 
 % Extensao do predicado impar: X -> {V,F}
 
 impar(1).
 impar(X) :- NX is X-2,NX >= 1,impar(NX).
 
+% Extensao do predicado multiplo de quatro: X -> {V,F}
+
+isB6(0).
+isB6(A) :- NA is A - 4, NA >= 0, isB6(NA).
+
+% Extensao do predicado conta número de digitos de um número: X -> {V,F}
+
+countDigits(0,0). 
+countDigits(X,N) :- NX is div(X,10) ,NX >= 0,countDigits(NX,NN), N is NN + 1.
+
+% Extensao do predicado adicao,subtracao,multiplicacao,divisao: X,Y -> {V,F}
+
+operationTwo(X,Y,OP) :- ((OP == '+') -> R is X+Y;(OP == '-') -> R is X-Y),write(R).
+operationTwo(X,Y,OP) :- ((OP == '*') -> R is X*Y;(OP == '/') -> R is X/Y),write(R).
+
 % Extensao do predicado data: [H|T] -> {V,F}
 
-data(D,M,A) :- D > 0, D =< 31, M > 0, M =< 12, 0 < A.
+data(D,2,A) :- D > 0, 0 < A,(isB6(A)) -> D =< 29; D =< 28.
+data(D,M,A) :- M \= 2,D > 0, D =< 31, M > 0, M =< 12, 0 < A.
+
+isData(data(D,M,A)) :- data(D,M,A).
 
 avancaDias(_,0,_).
-avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :- ((M == 2) -> ((D + Dias > 29) -> Ds is 1, Ms is 3, As is A, (avancaDias(data(1,3,A),Dias - (29 - D + 1),data(Ds,Ms,As)));
-                                                            (D + Dias =< 29) -> (Ds is (D + Dias), Ms is M, As is A)));
-                                               ((M =< 7) -> (((impar(M)) -> ((D + Dias > 31) -> Ds is 1, As is A, Ms is M + 1 , avancaDias(data(1,Ms,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
+avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :- ((M == 2) -> ((D + Dias > 28) -> (avancaDias(data(1,3,A),Dias - (28 - D + 1),data(Ds,Ms,As)));
+                                                            (D + Dias =< 28) -> (Ds is (D + Dias), Ms is M, As is A)));
+
+
+
+                                               ((M == 12) ->((D + Dias > 31) -> (avancaDias(data(1,1,A + 1),Dias - (31 - D + 1),data(Ds,Ms,As)));
+                                                            (D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)));
+
+
+
+                                               ((M =< 7) -> (((impar(M)) -> ((D + Dias > 31) ->  avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
                                                                   ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)));
-                                                            ((par(M)) ->  ((D + Dias > 30) ->  Ds is 1, As is A, Ms is M + 1 , avancaDias(data(1,Ms,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
+                                                            ((par(M)) ->  ((D + Dias > 30) -> avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
                                                                   ((D + Dias =< 30) -> (Ds is (D + Dias), Ms is M, As is A)))));                                           
-                                               ((M >= 8) -> (((impar(M)) -> ((D + Dias > 30) ->  Ds is 1, As is A, Ms is M + 1 , avancaDias(data(1,Ms,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
+                                               ((M >= 8) -> (((impar(M)) -> ((D + Dias > 30) ->  avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
                                                                   ((D + Dias < 30) ->(Ds is(D + Dias), Ms is M, As is A)));
-                                                            ((par(M)) ->  ((D + Dias > 31) ->  Ds is 1, As is A, Ms is M + 1 , avancaDias(data(1,Ms,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
+                                                            ((par(M)) ->  ((D + Dias > 31) -> avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
                                                                   ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A))))).
                                 
 
@@ -250,3 +287,10 @@ acumulaContrato(AN,AT,C) :- solucoes(V,contrato(AN,AT,_,_,_,V,_,_,_),S),somaList
 % Para um contrato entre as mesmas entidades com o mesmo serviço prestado não se pode adicionar dito contrato, caso o valor acumulado de todos os contrato seja maior ou igual que 75000, e
 % a diferença entre o ano económico e o ano do ultimo contrato realizado seja menor ou igual que dois
 +contrato(AN,AT,tipoContrato('Aquisição de Serviços'),TP,D,V,P,L,data(_,_,Ano)) :: (acumulaContrato(AN,AT,C), C >= 75000, difAno(Ano,AN,AT,tipoContrato('Aquisição de Serviços'),D,S), S =< 2).
+
+
+% Garantir que não podem ser adicionados adjudicantes com número de NIF negativo.
++adjudicante(_,_,NIF,_) :: (NIF =< 0,solucoes(NIF,adjudicante(_,_,NIF,_),S), comprimento(S,0)).
+
+% Garantir que não podem ser adicionadas adjudicatárias com número de NIF negativo.
++adjudicataria(_,_,NIF,_) :: (NIF =< 0,solucoes(NIF,adjudicataria(_,_,NIF,_),S), comprimento(S,0)).
