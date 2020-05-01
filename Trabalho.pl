@@ -106,12 +106,6 @@ demo( Questao,desconhecido ) :-
 
 %- - - - - - - - - - - - - - - - - - - - - - - - - - -  -  -  -  -   -
 
-+adjudicante(ID,N,NIF,M)::(solucoes( NIF,( adjudicante(ID,_,NIF,_) ),S ),
-				  comprimento( S,1 )).
-
-+adjudicataria(ID,N,NIF,M)::(solucoes( NIF,( adjudicataria(ID,_,NIF,_ ) ),S ),
-                  comprimento( S,1 )).
-
 % Invariante Estrutural:  nao permitir a insercao de conhecimento
 %                         repetido
 
@@ -138,19 +132,21 @@ demo( Questao,desconhecido ) :-
 % Invariante Referencial: 
 %
 
-% Garantir 
+% Garantir que ID e NIF de adjudicante são únicos.
 +adjudicante(ID,N,NIF,M)::(solucoes((Ns,Ms),(adjudicante(ID,Ns,NIF,Ms)),S),
 				  comprimento(S,Num),
 				  Num=<1).
 
+% Garantir que ID e NIF de adjudicante são iguais.
++adjudicante(ID,_,NIF,_):: ID == NIF.
+
+% Garantir que ID e NIF de adjudicatária são únicos.
 +adjudicataria(ID,N,NIF,M)::(solucoes((Ns,Ms),(adjudicataria(ID,Ns,NIF,Ms) ),S),
-				  comprimento( S,N ),
+				  comprimento( S,Num ),
                   Num=<1).
 
-% Garantir que contrato com mesmo adjudicante, adjudicataria, tipo de contrato e tipo de procedimento, tem informação diferente(descrição,valor,prazo,local e data)
-+contrato(AN,AT,TC,TP,D,V,P,L,DT)::(solucoes( (Ds,Vs,Ps,Ls,DTs),( contrato(AN,AT,TC,TP,Ds,Vs,Ps,Ls,DTs) ),S ),
-                  comprimento( S,N ), 
-				  N == 1 ).
+% Garantir que ID e NIF de adjudicatária são iguais.
++adjudicataria(ID,_,NIF,_):: ID == NIF.
 
 % Garantir que para o tipo de procedimento Ajuste Direto não se podem adicionar outros tipos de contrato para além de Aquisição e Locação de bens móveis e Aquisição de Serviços.
 +contrato(AN,AT,TC,tipoProcedimento('Ajuste Direto'),D,V,P,L,DT) :: (solucoes(TCs,contrato(_,_,TCs,tipoProcedimento('Ajuste Direto'),_,_,_,_,_),S),
@@ -174,8 +170,14 @@ demo( Questao,desconhecido ) :-
 % Garantir que um contrato é válido(campos corretos)
 +contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (countDigits(AN,N1), countDigits(AT,N2), tipoContrato(TC), tipoProcedimento(TP), isData(DT), N1 == 9, N2 == 9).
 
+% Garantir que um o ID e NIF de uma adjudicante tem 9 dígitos
++adjudicante(ID,N,NIF,M) :: (countDigits(ID,N1), N1 == 9).
+
+% Garantir que um o ID e NIF de uma adjudicataria tem 9 dígitos
++adjudicataria(ID,N,NIF,M) :: (countDigits(ID,N1), N1 == 9).
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 
+-adjudicante(123456789,'Joana Abrea',123456789,'Amarante').
 adjudicante(123456789,'Joana Abreia',123456789,'Amarante').
 adjudicataria(234567891,'Nuna Abreia',234567891,'Amarante e arredores').
 %contrato(123456789,23456789,tipoContrato('Aquisição de bens móveis'),tipoProcedimento('Ajuste Direto'),'wdcwcwec',200,200,'Amarante',data(29,4,2020)).
@@ -234,29 +236,23 @@ operationTwo(X,Y,OP) :- ((OP == '*') -> R is X*Y;(OP == '/') -> R is X/Y),write(
 % Extensao do predicado data: [H|T] -> {V,F}
 
 data(D,2,A) :- D > 0, 0 < A,(isB6(A)) -> D =< 29; D =< 28.
-data(D,M,A) :- M \= 2,D > 0, D =< 31, M > 0, M =< 12, 0 < A.
+data(D,M,A) :- M \= 2,M > 0, M =< 12,D > 0, D =< 31, 0 < A.
 
 isData(data(D,M,A)) :- data(D,M,A).
 
+
 avancaDias(_,0,_).
-avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :- ((M == 2) -> ((D + Dias > 28) -> (avancaDias(data(1,3,A),Dias - (28 - D + 1),data(Ds,Ms,As)));
+avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :-  ((M == 2) -> ((D + Dias > 28) -> (avancaDias(data(1,3,A),Dias - (28 - D + 1),data(Ds,Ms,As)));
                                                             (D + Dias =< 28) -> (Ds is (D + Dias), Ms is M, As is A)));
-
-
-
-                                               ((M == 12) ->((D + Dias > 31) -> (avancaDias(data(1,1,A + 1),Dias - (31 - D + 1),data(Ds,Ms,As)));
-                                                            (D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)));
-
-
-
                                                ((M =< 7) -> (((impar(M)) -> ((D + Dias > 31) ->  avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
                                                                   ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)));
                                                             ((par(M)) ->  ((D + Dias > 30) -> avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
-                                                                  ((D + Dias =< 30) -> (Ds is (D + Dias), Ms is M, As is A)))));                                           
-                                               ((M >= 8) -> (((impar(M)) -> ((D + Dias > 30) ->  avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
+                                                                  ((D + Dias =< 30) -> (Ds is (D + Dias), Ms is M, As is A)))),write('MONTH = 7\n'));                                           
+                                               ((M >= 8) -> (((M > 12) -> avancaDias(data(1,1,A+1),Dias,data(Ds,Ms,As))); 
+                                                            ((impar(M)) -> ((D + Dias > 30 ) ->  avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
                                                                   ((D + Dias < 30) ->(Ds is(D + Dias), Ms is M, As is A)));
-                                                            ((par(M)) ->  ((D + Dias > 31) -> avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
-                                                                  ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A))))).
+                                                            ((par(M)) ->  ((D + Dias > 31 ) -> avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
+                                                                  ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)))),write('MONTH = 8\n')).
                                 
 
 
