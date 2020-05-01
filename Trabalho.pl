@@ -32,7 +32,7 @@ insercao( Termo ) :-
     assert( Termo ).
 insercao( Termo ) :-
     retract( Termo ), !,fail.
-	
+  
 teste( [] ).
 teste( [R|LR] ) :-
     R,
@@ -112,37 +112,37 @@ demo( Questao,desconhecido ) :-
 % Garantir que cada adjudicante é unico
 +adjudicante(ID,N,NIF,M)::(solucoes( (ID,N,NIF,M),( adjudicante( ID,N,NIF,M ) ),S ),
                   comprimento( S,N ), 
-				  N == 1  ).
+          N == 1  ).
 
 % Garantir que cada adjudicataria é unica
 +adjudicataria(ID,N,NIF,M)::(solucoes( (ID,N,NIF,M),(adjudicataria( ID,N,NIF,M )),S ),
                   comprimento( S,Num ), 
-				  Num == 1  ).
+          Num == 1  ).
 
 % Garantir que cada contrato é unico
 +contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (solucoes((AN,AT,TC,TP,D,V,P,L,DT),(contrato(AN,AT,TC,TP,D,V,P,L,DT)),S),
                   comprimento( S,Num ), 
-				  Num == 1  ).
+          Num == 1  ).
 
 % Garantir que cada procedimento é unico (não sendo possível adicionar um novo tipo)
 +tipoProcedimento(T)::(solucoes(T,(tipoProcedimento(T)),S),
-				  comprimento( S,Num ),
-				  Num == 0  ).
+          comprimento( S,Num ),
+          Num == 0  ).
 
 % Invariante Referencial: 
 %
 
 % Garantir que ID e NIF de adjudicante são únicos.
 +adjudicante(ID,N,NIF,M)::(solucoes((Ns,Ms),(adjudicante(ID,Ns,NIF,Ms)),S),
-				  comprimento(S,Num),
-				  Num=<1).
+          comprimento(S,Num),
+          Num=<1).
 
 % Garantir que ID e NIF de adjudicante são iguais.
 +adjudicante(ID,_,NIF,_):: ID == NIF.
 
 % Garantir que ID e NIF de adjudicatária são únicos.
 +adjudicataria(ID,N,NIF,M)::(solucoes((Ns,Ms),(adjudicataria(ID,Ns,NIF,Ms) ),S),
-				  comprimento( S,Num ),
+          comprimento( S,Num ),
                   Num=<1).
 
 % Garantir que ID e NIF de adjudicatária são iguais.
@@ -159,7 +159,7 @@ demo( Questao,desconhecido ) :-
 % Garantir que não se pode remover um contrato que não exite na base de conhecimento
 -contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (solucoes((AN,AT,TC,TP,D,V,P,L,DT),(contrato(AN,AT,TC,TP,D,V,P,L,DT)),S),
                   comprimento( S,Num ),
-				  Num == 0).
+          Num == 0).
 
 % Garantir que um contrato está associado a um adjudicante e adjudicatária que existam na base de conhecimento
 +contrato(AN,AT,_,_,_,_,_,_,_) :: (solucoes(AN,(adjudicante(AN,_,_,_)),S), 
@@ -183,11 +183,11 @@ adjudicataria(234567891,'Nuna Abreia',234567891,'Amarante e arredores').
 %contrato(123456789,23456789,tipoContrato('Aquisição de bens móveis'),tipoProcedimento('Ajuste Direto'),'wdcwcwec',200,200,'Amarante',data(29,4,2020)).
 
 contrato(AN,AT,TC,TP,D,V,P,L,DT) :-
-	tipoProcedimento(TP),
-	adjudicante(Z,AN,X),
-	adjudicataria(Q,AT,W),
-	tipoContrato(TC),
-	localizacao(L).
+  tipoProcedimento(TP),
+  adjudicante(Z,AN,X),
+  adjudicataria(Q,AT,W),
+  tipoContrato(TC),
+  localizacao(L).
 
 tipoProcedimento('Ajuste Direto').
 tipoProcedimento('Consulta Previa').
@@ -242,8 +242,10 @@ isData(data(D,M,A)) :- data(D,M,A).
 
 
 avancaDias(_,0,_).
-avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :-  ((M == 2) -> ((D + Dias > 28) -> (avancaDias(data(1,3,A),Dias - (28 - D + 1),data(Ds,Ms,As)));
-                                                            (D + Dias =< 28) -> (Ds is (D + Dias), Ms is M, As is A)));
+avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :-  ((M == 2)-> (isB6(A)) -> ((D + Dias > 29) -> (avancaDias(data(1,3,A),Dias - (29 - D + 1),data(Ds,Ms,As)));
+                                                                         (D + Dias =< 29) -> (Ds is (D + Dias), Ms is M, As is A));
+                                                                         ((D + Dias > 28) -> (avancaDias(data(1,3,A),Dias - (28 - D + 1),data(Ds,Ms,As)));
+                                                                         (D + Dias =< 28) -> (Ds is (D + Dias), Ms is M, As is A)));
                                                ((M =< 7) -> (((impar(M)) -> ((D + Dias > 31) ->  avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
                                                                   ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)));
                                                             ((par(M)) ->  ((D + Dias > 30) -> avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
