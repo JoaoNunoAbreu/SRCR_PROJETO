@@ -216,12 +216,12 @@ par(X) :- NX is X-2,NX >= 0,par(NX).
 % Extensao do predicado impar: X -> {V,F}
 
 impar(1).
-impar(X) :- NX is X-2,NX >= 1,impar(NX).
+impar(X) :- nao(par(X)).
 
 % Extensao do predicado multiplo de quatro: X -> {V,F}
 
 isB6(0).
-isB6(A) :- NA is A - 4, NA >= 0, isB6(NA).
+isB6(A) :- 0 is mod(A,4).
 
 % Extensao do predicado conta número de digitos de um número: X -> {V,F}
 
@@ -242,19 +242,19 @@ isData(data(D,M,A)) :- data(D,M,A).
 
 
 avancaDias(_,0,_).
-avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :-  ((M == 2)-> (isB6(A)) -> ((D + Dias > 29) -> (avancaDias(data(1,3,A),Dias - (29 - D + 1),data(Ds,Ms,As)));
-                                                                         (D + Dias =< 29) -> (Ds is (D + Dias), Ms is M, As is A));
-                                                                         ((D + Dias > 28) -> (avancaDias(data(1,3,A),Dias - (28 - D + 1),data(Ds,Ms,As)));
-                                                                         (D + Dias =< 28) -> (Ds is (D + Dias), Ms is M, As is A)));
-                                               ((M =< 7) -> (((impar(M)) -> ((D + Dias > 31) ->  avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
-                                                                  ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)));
-                                                            ((par(M)) ->  ((D + Dias > 30) -> avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
-                                                                  ((D + Dias =< 30) -> (Ds is (D + Dias), Ms is M, As is A)))),write('MONTH = 7\n'));                                           
-                                               ((M >= 8) -> (((M > 12) -> avancaDias(data(1,1,A+1),Dias,data(Ds,Ms,As))); 
-                                                            ((impar(M)) -> ((D + Dias > 30 ) ->  avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
-                                                                  ((D + Dias < 30) ->(Ds is(D + Dias), Ms is M, As is A)));
-                                                            ((par(M)) ->  ((D + Dias > 31 ) -> avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
-                                                                  ((D + Dias =< 31) -> (Ds is (D + Dias), Ms is M, As is A)))),write('MONTH = 8\n')).
+avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :-  ((2 is M,isB6(A)) -> ((D + Dias > 29) -> (avancaDias(data(1,3,A),Dias - (29 - D + 1),data(Ds,Ms,As)));
+                                                                          (Ds is (D + Dias), Ms is M, As is A) ) );
+                                                ((2 is M,par(M),nao(isB6(A) )) -> ((D + Dias > 28) -> (avancaDias(data(1,3,A),Dias - (28 - D + 1),data(Ds,Ms,As)));
+                                                                          (Ds is (D + Dias), Ms is M, As is A)) );
+                                               ((M =< 7,impar(M)) -> ( (D + Dias > 31) ->  (avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
+                                                                  (Ds is (D + Dias), Ms is M, As is A) ) );
+                                               ((M > 2,M =< 7,par(M)) ->  ( (D + Dias > 30) -> (avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
+                                                                   (Ds is (D + Dias), Ms is M, As is A) ) );                                          
+                                               ((M > 12 ) -> avancaDias(data(1,1,A+1),Dias,data(Ds,Ms,As) ) ); 
+                                               ((M >= 8,impar(M)) -> ( (D + Dias > 30 ) ->  (avancaDias(data(1,M + 1,A),Dias - (30 - D + 1),data(Ds,Ms,As)));
+                                                                 (Ds is(D + Dias), Ms is M, As is A) ) );
+                                               ((M >= 8,par(M)) ->  ((D + Dias > 31 ) -> (avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
+                                                                  (Ds is (D + Dias), Ms is M, As is A) ))  .
                                 
 
 
