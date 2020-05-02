@@ -1,10 +1,5 @@
 :- use_module(library(system)).
 
-
-tipoContrato('Pre-reforma').
-tipoContrato('Tempo Parcial').
-tipoContrato('Termo Incerto').
-
 adjudicante(202344142,'Municipio de Amarante'  ,202344142,'Amarante').
 adjudicante(264306422,'Municipio de Amarante' ,264306422,'Amarante').
 adjudicante(223184241,'Municipio de Vinhais'  ,223184241,'Vinhais').
