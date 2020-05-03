@@ -509,3 +509,22 @@ evolucao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT),imp,LimiteInferior,LimiteSuperior
 involucao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT),LimiteSuperior,LimiteInferior) :-
     remocao((excecao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT)) :-
                       ValorD >= LimiteInferior, ValorD =< LimiteSuperior)).
+
+
+% Insere conhecimento imperfeito interdito na base de conhecimento
+evolucao(contrato(AN,AT,contratoSecreto,TP,descricaoSecreta,ValorD,P,localizacaoSecreta,DT)) :-
+	evolucao(contrato(AN,AT,contratoSecreto,TP,descricaoSecreta,ValorD,P,localizacaoSecreta,DT)),
+    insercao((excecao(contrato(ANC,ATC,TCC,TPC,DC,ValorDC,PC,LC,DTC)) :-
+    contrato(AN,AT,contratoSecreto,TP,descricaoSecreta,ValorD,P,localizacaoSecreta,DT))),
+    insercao((nuloInterdito(contratoSecreto))),
+    insercao((nuloInterdito(descricaoSecreta))),
+    insercao((nuloInterdito(localizacaoSecreta))).
+
+% Remove conhecimento imperfeito interdio na base de conhecimento
+involucao(contrato(AN,AT,contratoSecreto,TP,descricaoSecreta,ValorD,P,localizacaoSecreta,DT)) :-
+	involucao(contrato(AN,AT,contratoSecreto,TP,descricaoSecreta,ValorD,P,localizacaoSecreta,DT)),
+    remocao((excecao(contrato(ANC,ATC,TCC,TPC,DC,ValorDC,PC,LC,DTC)) :-
+    remocao(AN,AT,contratoSecreto,TP,descricaoSecreta,ValorD,P,localizacaoSecreta,DT))),
+    remocao((nuloInterdito(contratoSecreto))),
+    remocao((nuloInterdito(descricaoSecreta))),
+    remocao((nuloInterdito(localizacaoSecreta))).
