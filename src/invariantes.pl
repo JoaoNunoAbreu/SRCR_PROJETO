@@ -93,16 +93,16 @@
 +adjudicataria(ID,_,NIF,_):: (ID > 0, ID == NIF).
 
 % Garantir que para o tipo de procedimento Ajuste Direto não se podem adicionar outros tipos de contrato para além de Aquisição e Locação de bens móveis e Aquisição de Serviços.
-+contrato(AN,AT,TC,tipoProcedimento('Ajuste Direto'),D,V,P,L,DT) :: (solucoes(TCs,contrato(_,_,TCs,tipoProcedimento('Ajuste Direto'),_,_,_,_,_),S),
-                  apagaT(tipoContrato('Aquisiçao de bens moveis'),S,L1),
-                  apagaT(tipoContrato('Locacao de bens moveis'),L1,L2),
-                  apagaT(tipoContrato('Aquisicao de servicos'),L2,L3),
-                  comprimento(L3,Num),
-                  Num == 0).
++contrato(AN,AT,TC,'Ajuste Direto',D,V,P,L,DT) :: (TC == 'Aquisicao de bens moveis';
+                                                   TC == 'Locacao de bens moveis';
+                                                   TC == 'Aquisicao de servicos').
 
 % Para um contrato entre as mesmas entidades com o mesmo serviço prestado não se pode adicionar dito contrato, caso o valor acumulado de todos os contrato seja maior ou igual que 75000, e
 % a diferença entre o ano económico e o ano do ultimo contrato realizado seja menor ou igual que dois
-+contrato(AN,AT,tipoContrato('Aquisição de Serviços'),TP,D,V,P,L,data(_,_,Ano)) :: (acumulaContrato(AN,AT,C), C >= 75000, difAno(Ano,AN,AT,tipoContrato('Aquisição de Serviços'),D,S), S =< 2).
++contrato(AN,AT,tipoContrato('Aquisicao de Servicos'),TP,D,V,P,L,data(_,_,Ano)) :: (acumulaContrato(AN,AT,C), C >= 75000, difAno(Ano,AN,AT,tipoContrato('Aquisicao de Servicos'),D,S), S =< 2).
+
+% Garantir que se um contrato tiver tipo de procedimento 'Ajuste Direto', não lhe é permitido ter um valor maior que 5000 e prazo maior que 365 dias 
++contrato(AN,AT,TC,'Ajuste Direto',D,V,P,L,DT) :: (V =< 5000, P =< 365).
 
 % Garantir que não se pode remover um contrato que não exite na base de conhecimento
 -contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (solucoes((AN,AT,TC,TP,D,V,P,L,DT),(contrato(AN,AT,TC,TP,D,V,P,L,DT)),S),

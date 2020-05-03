@@ -3,7 +3,7 @@
 % Representação de conhecimento imperfeito
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 
-% Extensão do predicado adjudicante: #IdAd, Nome, NIF, Morada -> {V,F}
+% Extensão do predicado adjudicante: #IdAd, Nome, NIF, Morada -> {V,F,D}
 
 % Conhecimento Perfeito Positivo.
 
@@ -25,7 +25,7 @@ adjudicante(223184241,'Municipio de Vinhais',223184241,moradaDesconhecida).
 
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensão do predicado adjudicatária: #IdAda, Nome, NIF, Morada -> {V,F}
+% Extensão do predicado adjudicatária: #IdAda, Nome, NIF, Morada -> {V,F,D}
 
 % Conhecimento Perfeito Positivo 
 adjudicataria(514023708,'Arcos combinados-Arquietetos Associados LDA.',514023708,'Portugal').
@@ -47,24 +47,38 @@ excecao(adjudicante(264306422,'Municipio de Braga' ,264306422,'Braga,Pacos de Co
 excecao(adjudicante(264306422,'Municipio de Amarante' ,264306422,'Braga,Se')).
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensão do predicado contrato: #IdAd, #IdAda, TipoDeContrato, TipoDeProcedimento, Descrição, Custo, Prazo, Local, Data -> {V,F} 
+
+% Extensão do predicado contrato: TC -> {V,F,D} 
+
+tipoContrato('Aquisicao de bens moveis').
+tipoContrato('Locacao de bens moveis').
+tipoContrato('Aquisicao de servicos').
+tipoContrato('Empreitadas de obras publicas').
+
+% Extensão do predicado contrato: TP -> {V,F,D} 
+
+tipoProcedimento('Ajuste Direto').
+tipoProcedimento('Consulta Previa').
+tipoProcedimento('Concurso Publico').
+
+% Extensão do predicado contrato: #IdAd, #IdAda, TipoDeContrato, TipoDeProcedimento, Descrição, Custo, Prazo, Local, Data -> {V,F,D} 
 
 % Conhecimento Perfeito Positivo 
-contrato(500745471,514023708,'Aquisicao de servicos','Concurso publico','Levantamento Topografico',31500,90,'Portugal',data(24,4,2020)).
-contrato(506415082,513826602,'Aquisicao de bens e servicos','Concurso publico','Pecas para viaturas,maquinas e equipamentos',31250,1080,'Portugal,Coimbra',data(27,12,2019)).
-contrato(501102752,508559871,'Empreitadas de obras publicas','Concurso publico','Pavilhao Desportivo da EB 2,3',987853,360,'Portugal,Porto,Amarante',data(30,3,2020)).
-contrato(506770664,514495790,'Aquisicao de bens moveis','Ajuste direto','Aquisicao de Computadores Portateis',10800,8,'Portugal,Viseu',data(30,4,2020)).
-contrato(506770664,506155676,'Aquisicao de bens moveis','Ajuste direto','Equipamento de protecao individual',7241,10,'Portugal,Viseu',data(27,4,2020)).
-contrato(501102752,508190495,'Lococao de bens moveis','Ajuste direto','Lococao de monoblocos',6300,181,'Portugal,Porto,Amarante',data(19,12,2019)).
+contrato(500745471,514023708,'Aquisicao de servicos','Concurso Publico','Levantamento Topografico',31500,90,'Portugal',data(24,4,2020)).
+contrato(506415082,513826602,'Aquisicao de servicos','Concurso Publico','Pecas para viaturas,maquinas e equipamentos',31250,1080,'Portugal,Coimbra',data(27,12,2019)).
+contrato(501102752,508559871,'Empreitadas de obras publicas','Concurso Publico','Pavilhao Desportivo da EB 2 3',987853,80,'Portugal,Porto,Amarante',data(30,3,2020)).
+contrato(506770664,514495790,'Aquisicao de bens moveis','Ajuste Direto','Aquisicao de Computadores Portateis',1080,8,'Portugal,Viseu',data(30,4,2020)).
+contrato(506770664,506155676,'Aquisicao de bens moveis','Ajuste Direto','Equipamento de protecao individual',3241,10,'Portugal,Viseu',data(27,4,2020)).
+contrato(501102752,508190495,'Lococao de bens moveis','Ajuste Direto','Lococao de monoblocos',300,100,'Portugal,Porto,Amarante',data(1,5,2020)).
 
 % Conhecimento Perfeito Negativo
 % Contrato com um tipo de contrato pre reforma não está previsto no
 % código de contrato públicos mas sim de trabalho
--contrato(501102752,508190495,'Pre-reforma','Ajuste direto','Lococao de monoblocos',6.300,181,'Portugal,Porto,Amarante',data(19,12,2019)).
+-contrato(501102752,508190495,'Pre-reforma','Ajuste Direto','Lococao de monoblocos',6.300,181,'Portugal,Porto,Amarante',data(19,12,2019)).
 
 % Conhecimento Imperfeito Impreciso
 % Só se sabe que o valor está entre 7000€ e 10000€ a.
-excecao(contrato(500051070,500489297,'Aquisicao de bens moveis','Concurso publico','Aquisicao de artigos de fardamento',V,90,'Portugal,Lisboa',data(2,4,2020))) :- V >= 7000,V =< 10000.
+excecao(contrato(500051070,500489297,'Aquisicao de bens moveis','Concurso Publico','Aquisicao de artigos de fardamento',V,90,'Portugal,Lisboa',data(2,4,2020))) :- V >= 7000,V =< 10000.
 
 
 % Conhecimento Imperfeito Interdito
@@ -85,7 +99,7 @@ nuloInterdito(valorSecreto).
 % bem como  os interesses essenciais de defesa e 
 % segurança do Estado o exigirem
 
-contrato(600020339,505002892,contratoSecreto,'Ajuste Direto',descricaoSecreta,75000,60,localizacaoSecreta,data(29,4,2020)).
+contrato(600020339,505002892,contratoSecreto,'Ajuste Direto',descricaoSecreta,4000,60,localizacaoSecreta,data(29,4,2020)).
 excecao(contrato(AN,AT,TC,TP,D,V,P,L,DT)) :- contrato(AN,AT,contratoSecreto,TP,descricaoSecreta,V,P,localizacaoSecreta,DT).
 
 nuloInterdito(contratoSecreto).
@@ -94,7 +108,7 @@ nuloInterdito(localizacaoSecreta).
 
 % Garantir que não é adicionado valor conhecido a um contrato cujo valor deve permanecer desconhecido
 +contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (solucoes((AN,AT,TC,TP,D,V,P,L,DT),
-                                              (contrato(600020339,505002892,contratoSecreto,'Ajuste Direto',descricaoSecreta,75000,60,localizacaoSecreta,data(29,4,2020))
+                                              (contrato(600020339,505002892,contratoSecreto,'Ajuste Direto',descricaoSecreta,4000,60,localizacaoSecreta,data(29,4,2020))
                                               ,nao(nuloInterdito(contratoSecreto))
                                               ,nao(nuloInterdito(descricaoSecreta))
                                               ,nao(nuloInterdito(localizacaoSecreta))),S), 

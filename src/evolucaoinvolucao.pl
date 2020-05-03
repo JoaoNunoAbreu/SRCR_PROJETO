@@ -51,8 +51,6 @@ involucao(adjudicante(ID,N,NIF,moradaDesconhecida)) :-
 
 %Adjudicataria
 
-
-
 % Insere conhecimento imperfeito impreciso na base de conhecimento
 % no caso de uma entidade adjudicante com morada desconhecida entre
 % duas moradas
@@ -63,13 +61,12 @@ evolucao(adjudicataria(ID,N,NIF,MD),M1,M2) :-
 % Remove conhecimento imperfeito incerto na base de conhecimento
 % no caso de uma entidade adjudicante com morada desconhecida
 % duas moradas
-involucao(adjudicataria(ID,N,NIF,M)) :-
-    remocao((excecao(adjudicataria(ID,N,NIF,M)) :-
-                    adjudicataria(ID,N,NIF,M))).
+evolucao(adjudicataria(ID,N,NIF,MD),M1,M2) :-
+    remocao((excecao(adjudicataria(ID,N,NIF,M1)))),
+    remocao((excecao(adjudicataria(ID,N,NIF,M2)))).
 
 
 %Contrato
-
 evolucao(Termo,imp) :-
     solucoes(Invariante,+Termo::Invariante,Lista),
     insercao(excecao(Termo)),
@@ -82,7 +79,6 @@ involucao(Termo, imp) :-
 
 % Insere conhecimento imperfeito impreciso na base de conhecimento
 % no caso de um contrato entre dois valores
-
 evolucao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT),imp,LimiteInferior,LimiteSuperior) :-
     insercao((excecao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT)) :-
                     ValorD >= LimiteInferior, ValorD =< LimiteSuperior)).

@@ -62,6 +62,11 @@ data(D,M,A) :- M \= 2,M > 0, M =< 12,D > 0, D =< 31, 0 < A.
 % Extensao do predicado isData: data(D,M,A) -> {V,F}
 isData(data(D,M,A)) :- data(D,M,A).
 
+% Extensao do predicado sumValor: [H|T], X -> {V,F}
+
+sumValor([],0).
+sumValor([H|T],Sum) :- sumValor(T,NSum), Sum is H + NSum. 
+
 % Extensao do predicado avancaDias: X, Y, Z -> {V,F} 
 avancaDias(_,0,_).
 avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :-  ((2 is M,isB6(A)) -> ((D + Dias > 29) -> (avancaDias(data(1,3,A),Dias - (29 - D + 1),data(Ds,Ms,As)));
@@ -77,8 +82,6 @@ avancaDias(data(D,M,A),Dias,data(Ds,Ms,As)) :-  ((2 is M,isB6(A)) -> ((D + Dias 
                                                                  (Ds is(D + Dias), Ms is M, As is A) ) );
                                                ((M >= 8,par(M)) ->  ((D + Dias > 31 ) -> (avancaDias(data(1,M + 1,A),Dias - (31 - D + 1),data(Ds,Ms,As)));
                                                                   (Ds is (D + Dias), Ms is M, As is A) ))  .
-                                
-
 
 % Extensao do predicado apagaT: [H|T] -> {V,F}
 apagaT(_,[],[]).

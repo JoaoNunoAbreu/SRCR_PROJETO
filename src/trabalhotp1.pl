@@ -32,6 +32,7 @@
 :- include('conhecimento.pl').
 :- include('evolucaoinvolucao.pl').
 :- include('invariantes.pl').
+:- include('Queries.pl').
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do meta-predicado nao: Questao -> {V,F}
@@ -62,25 +63,6 @@ demo( Questao,desconhecido ) :-
 
 -contrato(AN,AT,TC,TP,D,V,P,L,DT) :- nao(contrato(AN,AT,TC,TP,D,V,P,L,DT)), nao(excecao(contrato(AN,AT,TC,TP,D,V,P,L,DT))).
 
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-contrato(AN,AT,TC,TP,D,V,P,L,DT) :-
-  tipoProcedimento(TP),
-  adjudicante(Z,AN,X),
-  adjudicataria(Q,AT,W),
-  tipoContrato(TC),
-  localizacao(L).
+%contrato(AN,AT,TC,tipoProcedimento('Ajuste Direto'),D,V,P,L,DT) :- V =< 5000, P =< 365.
 
-tipoProcedimento('Ajuste Direto').
-tipoProcedimento('Consulta Previa').
-tipoProcedimento('Concurso Publico').
-
-contrato(AN,AT,TC,tipoProcedimento('Ajuste Direto'),D,V,P,L,DT) :- V =< 5000, P =< 365.
-
-tipoContrato('Aquisicao de bens moveis').
-tipoContrato('Locacao de bens moveis').
-tipoContrato('Aquisicao de servicos').
-
-contrato(AN,AT,tipoContrato('Aquisicao de bens moveis'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
-contrato(AN,AT,tipoContrato('Locacao de bens moveis'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
-contrato(AN,AT,tipoContrato('Aquisicao de servicos'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
 
