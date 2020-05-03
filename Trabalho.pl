@@ -22,46 +22,6 @@
 :- dynamic tipoContrato/1.
 :- dynamic data/3.
 
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensão do predicado que permite a evolucao do conhecimento
-
-evolucao( Termo ) :-
-    solucoes( Invariante,+Termo::Invariante,Lista ),
-    insercao( Termo ),
-    teste( Lista ).
-
-evolucao( Termo, negativo ) :-
-    solucoes( Invariante,+(-Termo)::Invariante,Lista ),
-    insercao( -Termo ),
-    teste( Lista ).
-
-insercao( Termo ) :-
-    assert( Termo ).
-insercao( Termo ) :-
-    retract( Termo ), !,fail.
-  
-teste( [] ).
-teste( [R|LR] ) :-
-    R,
-    teste( LR ).
-
-%--------------------------------- - - - - - - - - - -  -  -  -  -   -
-% Extensão do predicado que permite a involucao do conhecimento
-
-involucao( Termo ) :-
-    solucoes( Invariante,-Termo::Invariante,Lista ),
-    remocao( Termo ),
-    teste( Lista ).
-
-involucao( -Termo ) :-
-    solucoes( Invariante,-(-Termo)::Invariante,Lista ),
-    remocao( -Termo ),
-    teste( Lista ).
-
-remocao( Termo ) :-
-    retract( Termo ).
-remocao( Termo ) :-
-    assert( Termo ),!,fail.
 
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do meta-predicado nao: Questao -> {V,F}
@@ -81,6 +41,7 @@ comprimento( S,N ) :-
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Extensao do meta-predicado demo: Questao,Resposta -> {V,F}
 %                            Resposta = { verdadeiro,falso,desconhecido }
+% Sistema de Inferência
 
 demo( Questao,verdadeiro ) :-
     Questao.
@@ -216,28 +177,8 @@ demo( Questao,desconhecido ) :-
 
 % Garantir que um o ID e NIF de uma adjudicataria tem 9 dígitos
 +adjudicataria(ID,N,NIF,M) :: (countDigits(ID,N1), N1 == 9).
+
 %--------------------------------- - - - - - - - - - -  -  -  -  -   -
-
-% Conhecimento Imperfeito Incerto
-excecao(adjudicante(ID,N,NIF,M)) :- adjudicante(ID,N,NIF,moradaDesconhecida).
-adjudicante(223184241,'Municipio de Vinhais'  ,223184241,moradaDesconhecida).
-
-% Conhecimento Imperfeito Impreciso(morada do adjudicante é desconhecido porém sabe-se é uma de entre um intervalo de respostas)
-excecao(adjudicante(264306422,'Municipio de Amarante' ,264306422,'Amarante, Alameda de Teixeira de Pascoais')).
-excecao(adjudicante(264306422,'Municipio de Amarante' ,264306422,'Amarante, Arquinho')).
-
-% Conhecimento Imperfeito Interdito
-
-contrato(202344142,244059039,'Aquisicao de bens moveis','Ajuste Direto','Assessoria juridica',valorSecreto,364,'Alto de Basto',data(29,4,2020)).
-excecao(contrato(AN,AT,TC,TP,D,V,P,L,DT)) :- contrato(AN,AT,TC,TP,D,valorSecreto,P,L,DT).
-nuloInterdito(valorSecreto).
-
-% Garantir que não é adicionado valor conhecido a um contrato cujo valor deve permanecer desconhecido
-+contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (solucoes((AN,AT,TC,TP,D,V,P,L,DT),
-                                              (contrato(202344142,244059039,'Aquisicao de bens moveis','Ajuste Direto','Assessoria juridica', valorSecreto,364,'Alto de Basto',data(29,4,2020))
-                                              ,nao(nuloInterdito(valorSecreto))),S), 
-                                     comprimento( S,0 )).
-
 
 contrato(AN,AT,TC,TP,D,V,P,L,DT) :-
   tipoProcedimento(TP),
@@ -256,9 +197,7 @@ contrato(AN,AT,TC,tipoProcedimento('Ajuste Direto'),D,V,P,L,DT) :- V =< 5000, P 
 tipoContrato('Aquisicao de bens moveis').
 tipoContrato('Locacao de bens moveis').
 tipoContrato('Aquisicao de servicos').
-tipoContrato('Pre-reforma').
-tipoContrato('Tempo Parcial').
-tipoContrato('Termo Incerto').
+
 
 contrato(AN,AT,tipoContrato('Aquisicao de bens moveis'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
 contrato(AN,AT,tipoContrato('Locacao de bens moveis'),tipoProcedimento('Ajuste Direto'),D,V,P,L,DT).
@@ -266,15 +205,31 @@ contrato(AN,AT,tipoContrato('Aquisicao de servicos'),tipoProcedimento('Ajuste Di
 
 %- Impedir a inserção de contratos com diferentes tipos dos já definidos, para o tipo de procedimento Ajuste Direto.
 
-% Representação de conhecimento negativo
-
+% Pressuposto do domínio fechado
 -adjudicante(ID,N,NIF,M) :- nao(adjudicante(ID,N,NIF,M)), nao(excecao(adjudicante(ID,N,NIF,M))).
 
 -adjudicataria(ID,N,NIF,M) :- nao(adjudicataria(ID,N,NIF,M)), nao(excecao(adjudicataria(ID,N,NIF,M))).
 
 -contrato(AN,AT,TC,TP,D,V,P,L,DT) :- nao(contrato(AN,AT,TC,TP,D,V,P,L,DT)), nao(excecao(contrato(AN,AT,TC,TP,D,V,P,L,DT))).
 
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
 % Funções Auxiliares
+
+insercao( Termo ) :-
+    assert( Termo ).
+insercao( Termo ) :-
+    retract( Termo ), !,fail.
+  
+teste( [] ).
+teste( [R|LR] ) :-
+    R,
+    teste( LR ).
+
+remocao( Termo ) :-
+    retract( Termo ).
+remocao( Termo ) :-
+    assert( Termo ),!,fail.
 
 % Extensao do predicado par: X -> {V,F}
 par(0).
@@ -355,3 +310,202 @@ acumulaContrato(AN,AT,C) :- solucoes(V,contrato(AN,AT,_,_,_,V,_,_,_),S),somaList
 
 
 
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Extensão do predicado adjudicante: #IdAd, Nome, NIF, Morada -> {V,F}
+
+% Conhecimento Perfeito Positivo.
+
+adjudicante(500745471,'Santa Casa de Lisboa',500745471,'Portugal,Lisboa').
+adjudicante(506415082,'Municipio de Coimbra',506415082,'Portugal,Lisboa').
+adjudicante(501102752,'Municipio de Amarante',501102752,'Portugal,Amarante').
+adjudicante(506770664,'Municipio de Vouzela',506770664,'Portugal,Viseu').
+adjudicante(600020339,'Procuradoria Geral da Republica',600020339,'Portugal,Lisboa').
+adjudicante(500051070,'Municipio de Lisboa',500051070,'Portugal,Lisboa').
+
+% Conhecimento Perfeito Negativo
+% Entidades publicas não têm NIF de privados,pessoas singulares
+-adjudicante(276836642,'Pedro' ,276836642,'Braga').
+
+% Conhecimento Imperfeito Incerto
+% Não se sabe a morada do adjudicante Municipio de Vinhais
+excecao(adjudicante(ID,N,NIF,M)) :- adjudicante(ID,N,NIF,moradaDesconhecida).
+adjudicante(223184241,'Municipio de Vinhais',223184241,moradaDesconhecida).
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Extensão do predicado adjudicatária: #IdAda, Nome, NIF, Morada -> {V,F}
+
+% Conhecimento Perfeito Positivo 
+adjudicataria(514023708,'Arcos combinados-Arquietetos Associados LDA.',514023708,'Portugal').
+adjudicataria(513826602,'VANITYFORMULA - PECAS AUTO, UNIPESSOAL, LDA',513826602,'Portugal').
+adjudicataria(508559871,'EDILAGES,S.A.',508559871,'Portugal').
+adjudicataria(514495790,'Dream2Fly,Lda',514495790,'Portugal').
+adjudicataria(506155676,'Xamane,S.A.',506155676,'Portugal').
+adjudicataria(508190495,'Alugal,Lda',508190495,'Portugal').
+adjudicataria(505002892,'INESC',505002892,'Portugal,Lisboa').
+adjudicataria(500489297,'A.da Costa, Lda.',500489297,'Portugal').
+
+% Conhecimento Perfeito Negativo
+% Nif da entidade adjudicataria não pode ser uma pessoa singular
+-adjudicataria(203931467,'Patricia',203931467,'Evora').
+
+% Conhecimento Imperfeito Impreciso(morada do adjudicante é desconhecido 
+%porém sabe-se é uma de entre um intervalo de respostas)
+excecao(adjudicante(264306422,'Municipio de Braga' ,264306422,'Braga,Pacos de Concelho')).
+excecao(adjudicante(264306422,'Municipio de Amarante' ,264306422,'Braga,Se')).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+% Extensão do predicado contrato: #IdAd, #IdAda, TipoDeContrato, TipoDeProcedimento, Descrição, Custo, Prazo, Local, Data -> {V,F} 
+
+% Conhecimento Perfeito Positivo 
+contrato(500745471,514023708,'Aquisicao de servicos','Concurso publico','Levantamento Topografico',31500,90,'Portugal',data(24,4,2020)).
+contrato(506415082,513826602,'Aquisicao de bens e servicos','Concurso publico','Pecas para viaturas,maquinas e equipamentos',31250,1080,'Portugal,Coimbra',data(27,12,2019)).
+contrato(501102752,508559871,'Empreitadas de obras publicas','Concurso publico','Pavilhao Desportivo da EB 2,3',987853,360,'Portugal,Porto,Amarante',data(30,3,2020)).
+contrato(506770664,514495790,'Aquisicao de bens moveis','Ajuste direto','Aquisicao de Computadores Portateis',10800,8,'Portugal,Viseu',data(30,4,2020)).
+contrato(506770664,506155676,'Aquisicao de bens moveis','Ajuste direto','Equipamento de protecao individual',7241,10,'Portugal,Viseu',data(27,4,2020)).
+contrato(501102752,508190495,'Lococao de bens moveis','Ajuste direto','Lococao de monoblocos',6300,181,'Portugal,Porto,Amarante',data(19,12,2019)).
+
+% Conhecimento Perfeito Negativo
+% Contrato com um tipo de contrato pre reforma não está previsto no
+% código de contrato públicos mas sim de trabalho
+-contrato(501102752,508190495,'Pre-reforma','Ajuste direto','Lococao de monoblocos',6.300,181,'Portugal,Porto,Amarante',data(19,12,2019)).
+
+% Conhecimento Imperfeito Impreciso
+% Só se sabe que o valor está entre 7000€ e 10000€ a.
+excecao(contrato(500051070,500489297,'Aquisicao de bens moveis','Concurso publico','Aquisicao de artigos de fardamento',V,90,'Portugal,Lisboa',data(2,4,2020))) :- V >= 7000,V =< 10000.
+
+
+% Conhecimento Imperfeito Interdito
+
+% É impossivel saber o valor do contrato cuja execução deve ser acompanhada de medidas especiais de segurança
+contrato(202344142,244059039,'Aquisicao de bens moveis','Ajuste Direto','Assessoria juridica',valorSecreto,364,'Alto de Basto',data(29,4,2020)).
+excecao(contrato(AN,AT,TC,TP,D,V,P,L,DT)) :- contrato(AN,AT,TC,TP,D,valorSecreto,P,L,DT).
+nuloInterdito(valorSecreto).
+
+% Garantir que não é adicionado valor conhecido a um contrato cujo valor deve permanecer desconhecido
++contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (solucoes((AN,AT,TC,TP,D,V,P,L,DT),
+                                              (contrato(202344142,244059039,'Aquisicao de bens moveis','Ajuste Direto','Assessoria juridica', valorSecreto,364,'Alto de Basto',data(29,4,2020))
+                                              ,nao(nuloInterdito(valorSecreto))),S), 
+                                     comprimento( S,0 )).
+
+% É impossivel saber o tipo de contrato,descricao e localizacao  cuja 
+% execução deve ser acompanhada de medidas especiais de segurança
+% bem como  os interesses essenciais de defesa e 
+% segurança do Estado o exigirem
+
+contrato(600020339,505002892,contratoSecreto,'Ajuste Direto',descricaoSecreta,75000,60,localizacaoSecreta,data(29,4,2020)).
+excecao(contrato(AN,AT,TC,TP,D,V,P,L,DT)) :- contrato(AN,AT,contratoSecreto,TP,descricaoSecreta,V,P,localizacaoSecreta,DT).
+
+nuloInterdito(contratoSecreto).
+nuloInterdito(descricaoSecreta).
+nuloInterdito(localizacaoSecreta).
+
+% Garantir que não é adicionado valor conhecido a um contrato cujo valor deve permanecer desconhecido
++contrato(AN,AT,TC,TP,D,V,P,L,DT) :: (solucoes((AN,AT,TC,TP,D,V,P,L,DT),
+                                              (contrato(600020339,505002892,contratoSecreto,'Ajuste Direto',descricaoSecreta,75000,60,localizacaoSecreta,data(29,4,2020))
+                                              ,nao(nuloInterdito(contratoSecreto))
+                                              ,nao(nuloInterdito(descricaoSecreta))
+                                              ,nao(nuloInterdito(localizacaoSecreta))),S), 
+                                     comprimento( S,0 )).
+
+
+
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+
+% Evolução e Involução
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+
+
+% Extensão do predicado que permite a involucao do conhecimento
+
+% Retira novo conhecimento na base de conhecimento positivo
+involucao( Termo ) :-
+    solucoes( Invariante,-Termo::Invariante,Lista ),
+    remocao( Termo ),
+    teste( Lista ).
+
+% Retira novo conhecimento na base de conhecimento negativo
+involucao( -Termo ) :-
+    solucoes( Invariante,-(-Termo)::Invariante,Lista ),
+    remocao( -Termo ),
+    teste( Lista ).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+
+% Extensão do predicado que permite a evolucao do conhecimento
+
+% Insere novo conhecimento na base de conhecimento positivo
+evolucao( Termo ) :-
+    solucoes( Invariante,+Termo::Invariante,Lista ),
+    insercao( Termo ),
+    teste( Lista ).
+
+% Insere novo conhecimento na base de conhecimento negativo
+evolucao( -Termo) :-
+    solucoes( Invariante,+(-Termo)::Invariante,Lista ),
+    insercao( -Termo ),
+    teste( Lista ).
+
+%--------------------------------- - - - - - - - - - -  -  -  -  -   -
+
+%Adjudicante
+
+% Insere conhecimento imperfeito incerto na base de conhecimento
+% no caso de uma entidade adjudicante com morada desconhecida
+evolucao(adjudicante(ID,N,NIF,moradaDesconhecida)) :-
+    evolucao(adjudicante(ID,N,NIF,moradaDesconhecida)),
+    insercao((excecao(adjudicante(IDAd,NAd,NIFAd,MAd)) :-
+                    adjudicante(IDAd,NAd,NIFAd,moradaDesconhecida))).
+
+% Remove conhecimento imperfeito incerto na base de conhecimento
+% no caso de uma entidade adjudicante com morada desconhecida
+involucao(adjudicante(ID,N,NIF,moradaDesconhecida)) :-
+    involucao(adjudicante(ID,N,NIF,moradaDesconhecida)),
+    remocao((excecao(adjudicante(IDAd,NAd,NIFAd,MAd)) :-
+                    adjudicante(IDAd,NAd,NIFAd,moradaDesconhecida))).
+
+%Adjudicataria
+
+
+
+% Insere conhecimento imperfeito impreciso na base de conhecimento
+% no caso de uma entidade adjudicante com morada desconhecida entre
+% duas moradas
+evolucao(adjudicataria(ID,N,NIF,MD),M1,M2) :-
+    insercao((excecao(adjudicataria(ID,N,NIF,M1)))),
+    insercao((excecao(adjudicataria(ID,N,NIF,M2)))).
+
+% Remove conhecimento imperfeito incerto na base de conhecimento
+% no caso de uma entidade adjudicante com morada desconhecida
+% duas moradas
+involucao(adjudicataria(ID,N,NIF,M)) :-
+    remocao((excecao(adjudicataria(ID,N,NIF,M)) :-
+                    adjudicataria(ID,N,NIF,M))).
+
+
+%Contrato
+
+evolucao(Termo,imp) :-
+    solucoes(Invariante,+Termo::Invariante,Lista),
+    insercao(excecao(Termo)),
+    teste(Lista).
+
+involucao(Termo, imp) :-
+    solucoes(I,-(excecao(Termo))::Invariante,Lista),
+    remocao(excecao(Termo)),
+    teste(Lista).
+
+% Insere conhecimento imperfeito impreciso na base de conhecimento
+% no caso de um contrato entre dois valores
+
+evolucao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT),imp,LimiteInferior,LimiteSuperior) :-
+    insercao((excecao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT)) :-
+                    ValorD >= LimiteInferior, ValorD =< LimiteSuperior)).
+
+% Remove conhecimento imperfeito incerto na base de conhecimento
+% no caso de um contrato entre dois valoreS
+involucao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT),LimiteSuperior,LimiteInferior) :-
+    remocao((excecao(contrato(AN,AT,TC,TP,D,ValorD,P,L,DT)) :-
+                      ValorD >= LimiteInferior, ValorD =< LimiteSuperior)).
