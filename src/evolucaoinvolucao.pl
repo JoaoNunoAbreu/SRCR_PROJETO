@@ -61,7 +61,7 @@ evolucao(adjudicataria(ID,N,NIF,MD),M1,M2) :-
 % Remove conhecimento imperfeito incerto na base de conhecimento
 % no caso de uma entidade adjudicante com morada desconhecida
 % duas moradas
-evolucao(adjudicataria(ID,N,NIF,MD),M1,M2) :-
+involucao(adjudicataria(ID,N,NIF,MD),M1,M2) :-
     remocao((excecao(adjudicataria(ID,N,NIF,M1)))),
     remocao((excecao(adjudicataria(ID,N,NIF,M2)))).
 
